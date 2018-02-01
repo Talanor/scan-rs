@@ -1,0 +1,11 @@
+[package]
+name = "rerust"
+version = "0.1.0"
+authors = ["talanor"]
+
+[dependencies]
+regex = "0.2.5"
+
+[lib]
+name = "pentnet"
+path = "src/lib.rs"
