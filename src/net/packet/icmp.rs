@@ -22,6 +22,9 @@ struct ICMPPacket {
  * 
  * One's complement sum: http://mathforum.org/library/drmath/view/54379.html
  * Apparently, not at all what's implemented in the github
+ * 
+ * Section 2.4.4.5.2 of https://tools.ietf.org/html/rfc1071 describes exactly
+ * However, the protocol here is TCP, not ICMP
  */
 impl ICMPPacket {
     // Checksum calculation: https://tools.ietf.org/html/rfc1071
