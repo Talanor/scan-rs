@@ -5,7 +5,6 @@
     Protocol RFC: https://tools.ietf.org/html/rfc792
 */
 
-#[allow(dead_code)] // WTF rust??
 #[derive(Debug)]
 pub struct ICMPHeader {
     typ: u8,
@@ -23,14 +22,13 @@ pub struct ICMPHeader {
  * One's complement sum: http://mathforum.org/library/drmath/view/54379.html
  * Apparently, not at all what's implemented in the github
  * 
- * Section 2.4.4.5.2 of https://tools.ietf.org/html/rfc1071 describes exactly
+ * Section 2.4.4.5.2 of https://tools.ietf.org/html/rfc1071 describes exactly that
  * However, the protocol here is TCP, not ICMP
  * 
- * Checksum must be calculated with data in mind too:
+ * Checksum must be calculated on data too:
  * https://www.scribd.com/doc/7074846/ICMP-and-Checksum-Calc
  */
 impl ICMPHeader {
-    #[allow(dead_code)] // WTF rust
     pub fn new(typ: u8, code: u8, roh: u32) -> ICMPHeader {
         ICMPHeader{
             typ: typ,
@@ -69,7 +67,6 @@ impl ICMPPacket {
         data.push((self.header.roh >> 16) as u16);
         data.push((self.header.roh & 0b1111111111111111) as u16);
 
-        // TODO: check if must pad or not in case of odd data
         let mut i = 0;
         while i < self.data.len() {
             data.push(
@@ -77,6 +74,9 @@ impl ICMPPacket {
                 + (self.data[i + 1] as u16)
             );
             i += 2;
+        }
+        if i - 1 == self.data.len() {
+            data.push(self.data[self.data.len() - 1] as u16);
         }
         data
     }
@@ -86,11 +86,11 @@ impl ICMPPacket {
         let data = self.pack_for_checksum();
 
         for item in data.into_iter() {
-            print!("{:04X} ", item);
             let carry: u32 = (checksum + (item as u32)) >> 16;
-            checksum = ((checksum + (item as u32)) & 0b1111111111111111) + carry;
+            checksum = ((checksum + (item as u32)) & 0xFFFF) + carry;
         }
 
+        checksum = checksum ^ 0xFFFFFFFF;
         checksum as u16
     }
 }
@@ -98,6 +98,19 @@ impl ICMPPacket {
 #[cfg(test)]
 mod tests {
     use super::ICMPPacket;
+
+    /**
+     * This is a valid ICMP Packet from wireshark:
+     * 0000  |  08 00 42 5c 02 00 09 00 61 62 63 64 65 66 67 68
+     *          -- -- ----- -----------
+     * Type  ---^  ^    ^        ^
+     *             |    |        |
+     * Code  -------    |        |
+     * Checksum ---------        |
+     * ROH   ---------------------
+     * 0010  |  69 6a 6b 6c 6d 6e 6f 70 71 72 73 74 75 76 77 61
+     * 0020  |  62 63 64 65 66 67 68 69
+     */
 
     #[test]
     fn test_check_checksum() {
