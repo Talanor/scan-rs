@@ -1,7 +1,7 @@
 mod ip;
 mod host;
 mod service;
-pub mod packet;
+pub mod transport;
 
 pub use self::ip::*;
 pub use self::host::*;
