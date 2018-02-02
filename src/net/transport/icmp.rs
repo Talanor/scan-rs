@@ -93,6 +93,19 @@ impl ICMPPacket {
         checksum = checksum ^ 0xFFFFFFFF;
         checksum as u16
     }
+
+    pub fn packet(&self) -> Vec<u8> {
+        let mut pack: Vec<u16> = self.pack_for_checksum();
+        let checksum: u16 = self.checksum();
+        let mut packet: Vec<u8> = Vec::new();
+
+        packet.push((pack[0] >> 8) as u8);
+        packet.push((pack[0] & 0xFF) as u8);
+        packet.push((checksum >> 8) as u8);
+        packet.push((checksum & 0xFF) as u8);
+
+        packet
+    }
 }
 
 #[cfg(test)]
